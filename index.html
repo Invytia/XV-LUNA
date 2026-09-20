@@ -37,19 +37,31 @@
             pointer-events: none;
         }
 
-        /* Capa oscurecedora para que el texto sea legible */
+        /* Capa oscurecedora: Oculta en el sobre, aparece en el contenido para dar lectura */
         .bg-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.65);
             z-index: 1;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        body.content-active .bg-overlay {
+            opacity: 1;
         }
 
         /* --- EFECTO NOCHE ESTRELLADA PREMIUM --- */
         .stars-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+        
+        body.content-active .stars-container {
+            opacity: 1;
         }
 
         /* Generamos estrellas mediante box-shadow en 3 capas de distintos tamaños y velocidades */
@@ -60,18 +72,18 @@
         #stars3 { width: 3px; height: 3px; background: transparent; animation: animStar 150s linear infinite; }
         #stars3::after { content: " "; position: absolute; top: 100vh; width: 3px; height: 3px; background: transparent; }
 
-        /* Efecto de titilar en capa separada */
+        /* Efecto de titilar sin alterar la escala (sin latido) */
         .twinkling {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: transparent;
             box-shadow: 15vw 20vh 1px #FFF, 45vw 10vh 2px #FFF, 75vw 40vh 1px #FFF, 90vw 80vh 2px #FFF, 10vw 90vh 1px #FFF, 50vw 50vh 2px #F9E596, 25vw 70vh 1px #FFF, 80vw 20vh 2px #F9E596;
-            animation: twinkle 4s infinite alternate;
+            animation: twinkle 4s infinite alternate ease-in-out;
         }
 
         @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-100vh); } }
         @keyframes twinkle {
-            0% { opacity: 0.3; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1.2); box-shadow: 15vw 20vh 3px #FFF, 45vw 10vh 4px #FFF, 75vw 40vh 3px #FFF, 90vw 80vh 5px #FFF, 10vw 90vh 3px #FFF, 50vw 50vh 5px #F9E596, 25vw 70vh 3px #FFF, 80vw 20vh 4px #F9E596, 0 0 15px rgba(255,255,255,0.8); }
+            0% { opacity: 0.4; }
+            100% { opacity: 1; box-shadow: 15vw 20vh 3px #FFF, 45vw 10vh 4px #FFF, 75vw 40vh 3px #FFF, 90vw 80vh 5px #FFF, 10vw 90vh 3px #FFF, 50vw 50vh 5px #F9E596, 25vw 70vh 3px #FFF, 80vw 20vh 4px #F9E596, 0 0 15px rgba(255,255,255,0.8); }
         }
 
         /* --- REPRODUCTOR DE MÚSICA (STICKY) --- */
@@ -93,15 +105,9 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1.5s ease-in-out, visibility 1.5s;
-            /* El fondo se hereda de la capa fixed-bg al ser transparente, logrando continuidad perfecta */
             background: transparent;
         }
-        /* Para que el sobre destaque, un gradiente extra solo en la pantalla de inicio */
-        #envelope-screen::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
-            z-index: -1;
-        }
+        
         #envelope-screen.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
 
         .envelope-text-container {
@@ -188,11 +194,10 @@
         .section-block {
             width: 100%; padding: 130px 20px; display: flex; flex-direction: column; align-items: center; text-align: center;
             position: relative; overflow: hidden;
-            background: rgba(0, 0, 0, 0.25); /* Ligero oscurecimiento para separar secciones */
-            backdrop-filter: blur(3px); /* Efecto cristal premium */
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(3px);
             border-bottom: 1px solid rgba(212, 175, 55, 0.1);
         }
-        /* Alternar la opacidad de los fondos para dar ritmo sin tapar el fondo fijo */
         .section-block:nth-child(even) {
             background: rgba(0, 0, 0, 0.4);
         }
@@ -436,7 +441,6 @@
             <div class="anim-element anim-fade-up delay-2 info-data info-data-gold" style="font-size: 44px;">Salón Terraza Bonanza</div>
             <div class="anim-element anim-fade-up delay-3 tag-line" style="font-size: 16px; margin: 20px 0; color: var(--text-muted);">7:00 p.m.</div>
             
-            <!-- Única imagen conservada -->
             <div class="anim-element anim-fade-up delay-4 photo-frame">
                 <img src="assets/salon.jpg" alt="Terraza Bonanza" onerror="this.style.display='none'">
             </div>
@@ -554,8 +558,6 @@
     </main>
 
     <script>
-        // Generar coordenadas aleatorias para las estrellas en CSS es complejo,
-        // por lo que generamos un box-shadow múltiple al cargar para un campo estelar dinámico y rico.
         function generateStars(count) {
             let value = `${Math.floor(Math.random() * 100)}vw ${Math.floor(Math.random() * 100)}vh #FFF`;
             for(let i = 2; i <= count; i++) {
@@ -565,12 +567,10 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Inyectar el campo estelar
             document.getElementById('stars').style.boxShadow = generateStars(150);
             document.getElementById('stars2').style.boxShadow = generateStars(50);
             document.getElementById('stars3').style.boxShadow = generateStars(20);
 
-            // Intersection Observer (Animaciones On-Scroll)
             const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
@@ -582,11 +582,9 @@
             }, observerOptions);
             document.querySelectorAll('.anim-element').forEach(el => observer.observe(el));
             
-            // Iniciar cuenta regresiva
             startCountdown();
         });
 
-        // --- CONTROL DE AUDIO ---
         let isMusicPlaying = false;
         const bgMusic = document.getElementById('bg-music');
         const playIcon = document.getElementById('music-icon-play');
@@ -605,7 +603,6 @@
             isMusicPlaying = !isMusicPlaying;
         }
 
-        // --- ANIMACIÓN INICIAL DEL SOBRE ---
         function openEnvelope() {
             const wrapper = document.querySelector('.envelope-wrapper');
             const screen = document.getElementById('envelope-screen');
@@ -628,7 +625,6 @@
             }, 1200);
         }
 
-        // --- CUENTA REGRESIVA ---
         function startCountdown() {
             const targetDate = new Date("December 26, 2026 19:00:00").getTime();
             
@@ -654,15 +650,12 @@
             }, 1000);
         }
 
-        // --- LÓGICA DEL SISTEMA DE PASES AVANZADO ---
         let pasesAsignados = 0;
         let nombreInvitado = "Invitado Especial";
         const urlParams = new URLSearchParams(window.location.search);
         
-        // El número unificado solicitado para las confirmaciones y deseos
         const currentPhoneNumber = "523317565028"; 
         
-        // Base de datos de prueba para Invytia (Mantenemos la estructura para compatibilidad)
         const dbInvitados = {
             "1": { nombre: "Familia Ejemplo", pases: 4 },
             "2": { nombre: "Amigos", pases: 2 }
@@ -681,10 +674,9 @@
         } else if (parametroPases && !isNaN(parametroPases)) {
             pasesAsignados = parseInt(parametroPases);
         } else {
-            pasesAsignados = 10; // Fallback
+            pasesAsignados = 10;
         }
 
-        // Mostrar boleto VIP si hay pases y URL con ID
         if (pasesAsignados > 0 && (parametroId || parametroPases)) {
             const pasesSection = document.getElementById('pases-section');
             if (pasesSection) {
@@ -695,7 +687,6 @@
             }
         }
 
-        // Control del Dropdown de RSVP
         const rsvpStatus = document.getElementById("rsvp-status");
         const rsvpGuests = document.getElementById("rsvp-guests");
 
@@ -712,7 +703,6 @@
             }
         });
 
-        // --- ENVÍO DE ASISTENCIA A WHATSAPP ---
         function sendRSVP() {
             const name = document.getElementById("rsvp-name").value.trim();
             const status = document.getElementById("rsvp-status").value;
@@ -736,7 +726,6 @@
             window.open(`https://wa.me/${currentPhoneNumber}?text=${message}`, '_blank');
         }
 
-        // --- ENVÍO DE MENSAJE DE DESEOS A WHATSAPP ---
         function sendWish() {
             const name = document.getElementById("wish-name").value.trim();
             const wish = document.getElementById("wish-message").value.trim();
